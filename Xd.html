@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Chart Converter Kade → Psych</title>
+<style>
+body {
+    background: #111;
+    color: white;
+    font-family: Arial;
+    text-align: center;
+}
+textarea {
+    width: 90%;
+    height: 200px;
+    margin: 10px;
+}
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🔥 Kade → Psych Converter 🔥</h1>
+
+<p>Pegá tu JSON de Kade:</p>
+<textarea id="input"></textarea>
+
+<button onclick="convert()">Convertir</button>
+
+<p>Resultado (Psych):</p>
+<textarea id="output"></textarea>
+
+<script>
+function convert() {
+    try {
+        let input = JSON.parse(document.getElementById("input").value);
+
+        let psych = {
+            song: {
+                song: input.song,
+                bpm: input.bpm,
+                speed: input.speed || 1,
+                notes: [],
+                events: [],
+                needsVoices: true,
+                player1: input.player1 || "bf",
+                player2: input.player2 || "dad"
+            }
+        };
+
+        for (let section of input.notes) {
+            let newSection = {
+                lengthInSteps: section.lengthInSteps,
+                mustHitSection: section.mustHitSection,
+                sectionNotes: []
+            };
+
+            for (let note of section.sectionNotes) {
+                newSection.sectionNotes.push([
+                    note[0], // tiempo
+                    note[1], // dirección
+                    note[2], // sustain
+                    0        // tipo de nota
+                ]);
+            }
+
+            psych.song.notes.push(newSection);
+        }
+
+        document.getElementById("output").value = JSON.stringify(psych, null, 2);
+
+    } catch (e) {
+        alert("Error en el JSON bro 💀");
+    }
+}
+</script>
+
+</body>
+</html>
