@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Character Converter Kade → Psych</title>
+<style>
+body {
+    background: #111;
+    color: white;
+    font-family: Arial;
+    text-align: center;
+}
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🔥 Character Converter 🔥</h1>
+
+<input type="file" id="fileInput" accept=".json">
+
+<br>
+
+<button onclick="convert()">Convertir</button>
+<button onclick="download()">Descargar JSON</button>
+
+<p id="status"></p>
+
+<script>
+let convertedData = null;
+
+function convert() {
+    const file = document.getElementById('fileInput').files[0];
+
+    if (!file) {
+        alert("Seleccioná un archivo bro 😤");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        try {
+            let data = JSON.parse(e.target.result);
+
+            let psych = {
+                animations: [],
+                image: data.image || data.sprite || "character",
+                scale: data.scale || 1,
+                sing_duration: data.sing_duration || 4,
+                healthicon: data.healthicon || "face",
+                position: data.position || [0, 0],
+                camera_position: data.camera_position || [0, 0],
+                flip_x: data.flip_x || false,
+                no_antialiasing: false
+            };
+
+            if (data.animations) {
+                for (let anim of data.animations) {
+                    psych.animations.push({
+                        anim: anim.anim || anim.name || "idle",
+                        name: anim.name || anim.anim,
+                        fps: anim.fps || 24,
+                        loop: anim.loop || false,
+                        indices: anim.indices || [],
+                        offsets: anim.offsets || [0, 0]
+                    });
+                }
+            }
+
+            convertedData = JSON.stringify(psych, null, 2);
+            document.getElementById("status").innerText = "✅ Convertido correctamente";
+
+        } catch (err) {
+            document.getElementById("status").innerText = "💀 Error leyendo JSON";
+            console.log(err);
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+function download() {
+    if (!convertedData) {
+        alert("Primero convertí algo 😤");
+        return;
+    }
+
+    const blob = new Blob([convertedData], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "psych-character.json";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+</script>
+
+</body>
+</html>
