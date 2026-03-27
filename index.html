@@ -1,105 +1,71 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Character Converter Kade → Psych</title>
-<style>
-body {
-    background: #111;
-    color: white;
-    font-family: Arial;
-    text-align: center;
-}
-button {
-    padding: 10px 20px;
-    margin: 10px;
-    font-size: 16px;
-}
-</style>
+  <title>Converter Codename → Psych (Notas)</title>
 </head>
-
 <body>
 
-<h1>🔥 Character Converter 🔥</h1>
-
-<input type="file" id="fileInput" accept=".json">
-
-<br>
-
+<h2>Convertir Chart a Psych Engine (solo notas)</h2>
+<input type="file" id="fileInput">
 <button onclick="convert()">Convertir</button>
-<button onclick="download()">Descargar JSON</button>
-
-<p id="status"></p>
 
 <script>
-let convertedData = null;
-
 function convert() {
-    const file = document.getElementById('fileInput').files[0];
+  const file = document.getElementById('fileInput').files[0];
+  if (!file) return alert("Subí un JSON bro");
 
-    if (!file) {
-        alert("Seleccioná un archivo bro 😤");
-        return;
-    }
+  const reader = new FileReader();
 
-    const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = JSON.parse(e.target.result);
 
-    reader.onload = function(e) {
-        try {
-            let data = JSON.parse(e.target.result);
+    let notes = [];
 
-            let psych = {
-                animations: [],
-                image: data.image || data.sprite || "character",
-                scale: data.scale || 1,
-                sing_duration: data.sing_duration || 4,
-                healthicon: data.healthicon || "face",
-                position: data.position || [0, 0],
-                camera_position: data.camera_position || [0, 0],
-                flip_x: data.flip_x || false,
-                no_antialiasing: false
-            };
+    data.strumLines.forEach((line, playerIndex) => {
+      line.notes.forEach(note => {
+        let mustHit = (line.type === 1);
 
-            if (data.animations) {
-                for (let anim of data.animations) {
-                    psych.animations.push({
-                        anim: anim.anim || anim.name || "idle",
-                        name: anim.name || anim.anim,
-                        fps: anim.fps || 24,
-                        loop: anim.loop || false,
-                        indices: anim.indices || [],
-                        offsets: anim.offsets || [0, 0]
-                    });
-                }
-            }
+        notes.push({
+          strumTime: note.time,
+          noteData: note.id,
+          sustainLength: note.sLen,
+          mustPress: mustHit
+        });
+      });
+    });
 
-            convertedData = JSON.stringify(psych, null, 2);
-            document.getElementById("status").innerText = "✅ Convertido correctamente";
-
-        } catch (err) {
-            document.getElementById("status").innerText = "💀 Error leyendo JSON";
-            console.log(err);
-        }
+    let psych = {
+      song: {
+        song: "converted",
+        notes: [{
+          sectionNotes: notes.map(n => [
+            n.strumTime,
+            n.noteData,
+            n.sustainLength,
+            n.mustPress
+          ]),
+          mustHitSection: false,
+          lengthInSteps: 16,
+          typeOfSection: 0,
+          bpm: 120,
+          changeBPM: false,
+          altAnim: false
+        }],
+        bpm: 120,
+        speed: data.scrollSpeed || 1
+      }
     };
 
-    reader.readAsText(file);
-}
-
-function download() {
-    if (!convertedData) {
-        alert("Primero convertí algo 😤");
-        return;
-    }
-
-    const blob = new Blob([convertedData], { type: "application/json" });
+    const blob = new Blob([JSON.stringify(psych, null, 2)], {type: "application/json"});
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "psych-character.json";
+    a.download = "psych_chart.json";
     a.click();
+  };
 
-    URL.revokeObjectURL(url);
+  reader.readAsText(file);
 }
 </script>
 
